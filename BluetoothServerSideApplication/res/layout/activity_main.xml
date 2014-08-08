@@ -1,0 +1,133 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${relativePackage}.${activityClass}" 
+    android:padding="4dp"
+    android:background="#273464">
+    
+    
+<TextView android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Server Side Application"
+    android:textColor="#141f4c"
+    android:background="#ffffff"
+    android:textSize="30dp"
+    android:gravity="center"
+    android:id="@+id/txt_serverside"
+    android:paddingBottom="5dp"
+    android:paddingTop="5dp"/>
+
+    <TextView
+        android:layout_below="@+id/txt_serverside"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Server Information" 
+        android:textSize="18dp"
+        android:textColor="#ffffff"
+        android:background="#141f4c"
+        android:id="@+id/textview"/>
+    
+    <TextView
+        android:id="@+id/info"
+        android:text="info"
+        android:layout_below="@+id/textview"
+        android:textColor="#ffffff"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+               />
+    <TextView
+        android:id="@+id/infoip"
+        android:text="infoip"
+        android:textColor="#ffffff"
+        android:layout_below="@+id/info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+       
+        />
+    <TextView
+        android:layout_below="@+id/infoip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Recent WiFi Client" 
+        android:textSize="18dp"
+        android:textColor="#ffffff"
+        android:background="#141f4c"
+        android:id="@+id/textview2"/>
+
+    
+    <LinearLayout android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/layout3"
+    android:layout_below="@+id/textview2">
+
+    
+    
+    <TextView
+            android:id="@+id/msg"
+            android:textColor="#ffffff"
+           
+            android:layout_below="@+id/textview2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+    
+    
+</LinearLayout>
+    
+    <TextView
+        android:layout_below="@+id/layout3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Recent Bluetooth Client" 
+        android:textSize="18dp"
+        android:textColor="#ffffff"
+        android:background="#141f4c"
+        android:id="@+id/textview3"/>
+ <TextView
+            android:id="@+id/txt_recent_bt_client"
+            android:textColor="#ffffff"
+            android:text="message"
+            android:layout_below="@+id/textview3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+ 
+    <LinearLayout android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:weightSum="2"
+        android:orientation="horizontal"
+       android:paddingRight="10dp"
+       android:paddingLeft="10dp"
+       android:paddingTop="25dp"
+        android:layout_below="@+id/txt_recent_bt_client">
+        
+        
+    <Button android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="CLIENTS"
+        android:drawableTop="@drawable/btn_select"
+        android:textColor="#ffffff"
+        android:layout_weight="1"
+        android:background="#00000000"
+        android:layout_gravity="bottom"
+        android:id="@+id/btn_btclient"
+        />
+    
+     <Button android:layout_width="0dp"
+        android:layout_height="wrap_content"
+   		android:textColor="#ffffff"
+        android:layout_gravity="bottom"
+        android:text="CLIENTS"
+        android:layout_weight="1"
+        android:drawableTop="@drawable/btn_wifi"
+        android:background="#00000000"
+        android:id="@+id/btn_wificlient"
+        android:layout_below="@+id/btn_btclient"/>
+     
+     </LinearLayout>
+<!--     <ListView android:layout_width="match_parent" -->
+<!--         android:layout_height="match_parent" -->
+<!--         android:id="@+id/list_connected_devices" -->
+<!--         android:layout_below="@+id/btn_wificlient"></ListView> -->
+</RelativeLayout>
