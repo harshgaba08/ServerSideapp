@@ -36,6 +36,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
+import android.nfc.NfcAdapter;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -70,10 +71,11 @@ public class MainActivity extends Activity {
     DatabaseHandler db;  //Object of DatabaseHandler class
     WifiClientModel cc;  //Object of Client class
 	BluetoothClientModel bt;
-	Button btn_wificlient, btn_btclient;
+	Button btn_wificlient, btn_btclient,nfc_connect,btn_nfcclient;
 	 OutputStream outputStream;
 	 PrintStream printStream;
 	 Socket socket;
+	 NfcAdapter mNfcAdapter;
 	//////////////////////////////////////////////////////////////////
 	//Flags and Status...
 	private static final int DISCOVERABLE_REQUEST_CODE = 0x1;
@@ -168,6 +170,7 @@ public class MainActivity extends Activity {
 		//intent to make bluetooth discoverable
 		Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
 		discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION,3600);
+		 mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 		startActivityForResult(discoverableIntent, DISCOVERABLE_REQUEST_CODE);
 		is_dialogvisible=true;
 		timer_bluetooth_dicoverable();
@@ -176,6 +179,27 @@ public class MainActivity extends Activity {
 		bt= new BluetoothClientModel();
 		btn_wificlient=(Button) findViewById(R.id.btn_wificlient);  // CLick to view the Wifi Clients Lists
 		btn_btclient=(Button) findViewById(R.id.btn_btclient); 				// CLick to view the Bluetooth Clients Lists
+		btn_nfcclient=(Button) findViewById(R.id.btn_nfcclient);
+		nfc_connect=(Button) findViewById(R.id.nfc_connect);
+		btn_nfcclient.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent i111=new Intent(getApplicationContext(),NFCClientsList.class );
+				startActivity(i111);
+				
+			}
+		});
+		nfc_connect.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent i1=new Intent(getApplicationContext(),NFC.class );
+				startActivity(i1);
+			}
+		});
 		btn_btclient.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -214,6 +238,8 @@ public class MainActivity extends Activity {
         enablewifi(); // Method to enable the Wifi
         start();
 	}
+	
+	
 	
 	
 	// Method to enable the Wifi

@@ -100,6 +100,7 @@
        android:paddingRight="10dp"
        android:paddingLeft="10dp"
        android:paddingTop="25dp"
+       android:id="@+id/layout2"
         android:layout_below="@+id/txt_recent_bt_client">
         
         
@@ -124,6 +125,43 @@
         android:background="#00000000"
         android:id="@+id/btn_wificlient"
         android:layout_below="@+id/btn_btclient"/>
+     
+     </LinearLayout>
+     <LinearLayout android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:weightSum="2"
+        android:orientation="horizontal"
+       android:paddingRight="10dp"
+       android:paddingLeft="10dp"
+       android:paddingTop="25dp"
+       
+        android:layout_below="@+id/layout2">
+        
+         <Button android:layout_width="0dp"
+        android:layout_height="wrap_content"
+   		android:textColor="#ffffff"
+        android:layout_gravity="bottom"
+         android:text="CONNECT"
+        android:layout_weight="1"
+        android:drawableTop="@drawable/btn_nfc"
+        android:background="#00000000"
+       
+        android:id="@+id/nfc_connect"
+        />
+        
+    <Button android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="CLIENTS"
+       
+        android:drawableTop="@drawable/btn_nfc"
+        android:textColor="#ffffff"
+        android:layout_weight="1"
+        android:background="#00000000"
+        android:layout_gravity="bottom"
+         android:id="@+id/btn_nfcclient"
+        />
+    
+     
      
      </LinearLayout>
 <!--     <ListView android:layout_width="match_parent" -->
