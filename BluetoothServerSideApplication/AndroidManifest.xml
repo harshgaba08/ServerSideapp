@@ -5,7 +5,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="11"
+        android:minSdkVersion="14"
         android:targetSdkVersion="19" />
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -15,6 +15,15 @@
   <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
   <uses-permission android:name="android.permission.NFC"></uses-permission>
   
+  
+  
+ 
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -51,6 +60,9 @@
          <activity android:name="com.example.bluetoothserversideapplication.NFCClientsList"
             android:screenOrientation="portrait"
             android:theme="@style/Splash_theme"></activity>
+         
+         <!-- Used for transferring files  after a successful connection -->
+        <service android:enabled="true" android:name=".FileTransferService" />
     </application>
-
+ 
 </manifest>

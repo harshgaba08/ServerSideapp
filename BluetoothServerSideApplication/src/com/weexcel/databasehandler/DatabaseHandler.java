@@ -21,11 +21,11 @@ public class DatabaseHandler extends SQLiteOpenHelper
 
     /***** Column names of the wifi_clients_table *****/
     private static final String KEY_ID = "id";
-    private static final String USER_NUM = "user_num";
-    private static final String PORT_NUM = "port";
-    private static final String IP_ADDRESS = "ip";
+   // private static final String USER_NUM = "user_num";
+   // private static final String PORT_NUM = "port";
+    private static final String MACI_ADDRESS = "macaddress";
     private static final String TIME = "time";
-    private static final String MESSAGE = "message";
+    //private static final String MESSAGE = "message";
     private static final String DEVICE = "device";
     
     /***** Column names of the wifi_clients_table *****/
@@ -41,12 +41,10 @@ public class DatabaseHandler extends SQLiteOpenHelper
     
     String CREATE_TABLE = "CREATE TABLE " + TABLE_WIFI_CLIENTS + "("
             + KEY_ID + " INTEGER PRIMARY KEY,"
-            + USER_NUM + " TEXT,"
-            + PORT_NUM + " TEXT,"
-            + IP_ADDRESS + " TEXT,"
-            + TIME + " TEXT,"
-            + MESSAGE + " TEXT,"
-            + DEVICE + " TEXT"+ ")";
+            + DEVICE + " TEXT,"
+            + MACI_ADDRESS + " TEXT,"
+            + TIME + " TEXT"+ ")";
+    
     
     public String CREATE_TABLE2 = "CREATE TABLE " + TABLE_BLUETOOTH_CLIENTS + "("
             + KEY_IDI + " INTEGER PRIMARY KEY,"
@@ -89,12 +87,9 @@ public class DatabaseHandler extends SQLiteOpenHelper
     public void addwifiClient(WifiClientModel cc) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(USER_NUM, cc.getUSER_NUM());
-        values.put(PORT_NUM, cc.getPORT_NUM());
-        values.put(IP_ADDRESS, cc.getIP_ADDRESS());
-        values.put(TIME, cc.getTIME());
-        values.put(MESSAGE, cc.getMESSAGE());
         values.put(DEVICE, cc.getDEVICE());
+        values.put(MACI_ADDRESS, cc.getIP_ADDRESS());
+        values.put(TIME, cc.getTIME());
         db.insert(TABLE_WIFI_CLIENTS, null, values);
         db.close(); // Closing the database connection
     }

@@ -1,5 +1,9 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+     android:layout_width="match_parent"
+    android:layout_height="match_parent">
+<RelativeLayout 
+    
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="${relativePackage}.${activityClass}" 
@@ -28,25 +32,17 @@
         android:background="#141f4c"
         android:id="@+id/textview"/>
     
+    <fragment
+            class="com.example.bluetoothserversideapplication.DeviceListFragment"
+            android:id="@+id/frag_list"
+            android:layout_width="match_parent"
+            android:layout_below="@+id/textview"
+            android:layout_height="wrap_content">
+            <!-- Preview: layout=@layout/row_devices -->
+        </fragment>
+    
     <TextView
-        android:id="@+id/info"
-        android:text="info"
-        android:layout_below="@+id/textview"
-        android:textColor="#ffffff"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-               />
-    <TextView
-        android:id="@+id/infoip"
-        android:text="infoip"
-        android:textColor="#ffffff"
-        android:layout_below="@+id/info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-       
-        />
-    <TextView
-        android:layout_below="@+id/infoip"
+        android:layout_below="@+id/frag_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Recent WiFi Client" 
@@ -56,21 +52,20 @@
         android:id="@+id/textview2"/>
 
     
-    <LinearLayout android:layout_width="wrap_content"
+    <LinearLayout android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:id="@+id/layout3"
     android:layout_below="@+id/textview2">
 
-    
-    
-    <TextView
-            android:id="@+id/msg"
-            android:textColor="#ffffff"
+    <fragment
+            class="com.example.bluetoothserversideapplication.DeviceDetailFragment"
+            android:id="@+id/frag_detail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
            
-            android:layout_below="@+id/textview2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            />
+        </fragment>
+    
     
     
 </LinearLayout>
@@ -164,8 +159,7 @@
      
      
      </LinearLayout>
-<!--     <ListView android:layout_width="match_parent" -->
-<!--         android:layout_height="match_parent" -->
-<!--         android:id="@+id/list_connected_devices" -->
-<!--         android:layout_below="@+id/btn_wificlient"></ListView> -->
+     
+     
 </RelativeLayout>
+</ScrollView>

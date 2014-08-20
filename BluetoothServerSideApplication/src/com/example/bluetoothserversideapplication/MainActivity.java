@@ -22,6 +22,8 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 
+import com.example.bluetoothserversideapplication.DeviceListFragment.DeviceActionListener;
+
 import com.weexcel.databasehandler.DatabaseHandler;
 
 
@@ -33,9 +35,17 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
+import android.net.wifi.p2p.WifiP2pConfig;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pManager;
+import android.net.wifi.p2p.WifiP2pManager.ActionListener;
+import android.net.wifi.p2p.WifiP2pManager.Channel;
+import android.net.wifi.p2p.WifiP2pManager.ChannelListener;
 import android.nfc.NfcAdapter;
 import android.os.Build;
 import android.os.Bundle;
@@ -54,14 +64,14 @@ import android.widget.Toast;
 
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements ChannelListener, DeviceActionListener {
 	
 	///////////////////////////////////////////////////////////////////
 	
 	public int incri=0;
 	String part1 = "";
     String part2="";
-	TextView info, infoip, msg, txt_recent_bt_client;   // TextViews objects are declared, these can be accessed throughout the activity
+	TextView msg, txt_recent_bt_client; // TextViews objects are declared, these can be accessed throughout the activity
     String message = "";        //String type variable to hold the full message shown by Server initialised as empty
     ServerSocket serverSocket;  //Object of ServerSocket
     String gotmsg = "";     //String to hold the message received from the Client initialised as empty
@@ -101,7 +111,19 @@ public class MainActivity extends Activity {
 	public BluetoothAdapter mBluetoothAdapter;
 	private BluetoothSocket mmSocket=null;
 	
+/////////////////////////////////////new code///////////////////////////////////////////////////////
+	
+	public static final String TAG = "wifidirectdemo";
+    private WifiP2pManager manager;
+    private boolean isWifiP2pEnabled = false;
+    private boolean retryChannel = false;
 
+    private final IntentFilter intentFilter = new IntentFilter();
+    private Channel channel; //channel object
+    private BroadcastReceiver receiver = null;
+    
+    ///////////////////////////////////////////////////////new code//////////////////////////////////////////
+    
 	//HAndler for handling Responses...
 	Handler mHandler=new Handler(){
 		
@@ -160,8 +182,14 @@ public class MainActivity extends Activity {
 		};
 	};
 	
-	
-	
+	/////////////////////////// new code/////////////////////
+	/**
+     * @param isWifiP2pEnabled the isWifiP2pEnabled to set
+     */
+    public void setIsWifiP2pEnabled(boolean isWifiP2pEnabled) {
+        this.isWifiP2pEnabled = isWifiP2pEnabled;
+    }
+	//////////////////////////// new code///////////////////
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -223,23 +251,58 @@ public class MainActivity extends Activity {
 		
 		 
 		db = new DatabaseHandler(getApplicationContext());   //Creation and initialization of the Object
-        info = (TextView) findViewById(R.id.info);  //Object of TextView is being initialized
-        infoip = (TextView) findViewById(R.id.infoip); //Object of TextView is being initialized
-        msg = (TextView) findViewById(R.id.msg); //Object of TextView is being initialized
+//        
         txt_recent_bt_client = (TextView) findViewById(R.id.txt_recent_bt_client); //Object of TextView is being initialized
         android.util.Log.e("TrackingFlow", "before getIp Address");
-        infoip.setText("\n"+getIpAddress()+"\n"); //IP address got from the method getIpAddress has been set (IP Address of Server)
         android.util.Log.e("TrackingFlow", "after getIpr address");
-        Thread socketServerThread = new Thread(new SocketServerThread());
         android.util.Log.e("TrackingFlow", "socketserverthread created");//Creating Object of Thread
-        socketServerThread.start();
         android.util.Log.e("TrackingFlow", "socketserverthread starts");
         /////////////////////////////////////////////////////////////////////////////////////////
         enablewifi(); // Method to enable the Wifi
         start();
+        
+        ///////////////////////////new code////////////////////////////////
+        
+        /** intent filters for wifi p2p states monitoring **/
+        
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+
+        manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        channel = manager.initialize(this, getMainLooper(), null);
+        harsh(); /** makes the device discoverable for peers. */
+        ////////////////////////////////// new code/////////////////////////////
+		receiver = new WiFiDirectBroadcastReceiver(manager, channel, this);
+        registerReceiver(receiver, intentFilter);
 	}
 	
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+
+        
+	}
 	
+	/** makes the device discoverable for peers. */
+    public void harsh(){
+    	manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
+    		//
+    		                    @Override
+    		                    public void onSuccess() {
+    		                        Toast.makeText(MainActivity.this, "Discovery Initiated",
+    		                                Toast.LENGTH_SHORT).show();
+    		                    }
+    		
+    		                    @Override
+    		                    public void onFailure(int reasonCode) {
+    		                        Toast.makeText(MainActivity.this, "Discovery Failed : " + reasonCode,
+    		                                Toast.LENGTH_SHORT).show();
+    		                    }
+    		                });
+    }
 	
 	
 	// Method to enable the Wifi
@@ -314,8 +377,44 @@ public class MainActivity extends Activity {
 		// TODO Auto-generated method stub
 		super.onPause();
 	}
+
+	
+	///////////////////////////////////////////////new code////////////////////////////////////
+	
+	// resets all the data
+	public void resetData() {
+		harsh();
+        DeviceListFragment fragmentList = (DeviceListFragment) getFragmentManager()
+                .findFragmentById(R.id.frag_list);
+        DeviceDetailFragment fragmentDetails = (DeviceDetailFragment) getFragmentManager()
+                .findFragmentById(R.id.frag_detail);
+        if (fragmentDetails != null) {
+            fragmentDetails.resetViews();
+        }
+    }
+	
+	
+	/////////////////////////////////////////////////new code//////////////////////////////////
+	
 	@Override
 	protected void onDestroy() {
+		//disconnect the connection
+		manager.removeGroup(channel, new ActionListener() {
+			
+			@Override
+			public void onSuccess() {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onFailure(int reason) {
+				// TODO Auto-generated method stub
+			       Log.d(TAG, "Disconnect failed. Reason :" + reason);
+			}
+		});
+		// unregister the receiver
+		unregisterReceiver(receiver);
 		if (serverSocket != null) {
             try {
                 serverSocket.close();
@@ -354,6 +453,81 @@ public class MainActivity extends Activity {
     	timerstatus=false;
 	}
 
+	
+	////////////////////////////////////////////////////new code//////////////////////////////////////////////
+	
+	 @Override
+	    public void showDetails(WifiP2pDevice device) {
+	        DeviceDetailFragment fragment = (DeviceDetailFragment) getFragmentManager()
+	                .findFragmentById(R.id.frag_detail);
+	        fragment.showDetails(device);
+
+	    }
+
+	    @Override
+	    public void connect(WifiP2pConfig config) {
+	        manager.connect(channel, config, new ActionListener() {
+
+	            @Override
+	            public void onSuccess() {
+	                // WiFiDirectBroadcastReceiver will notify us. Ignore for now.
+	            }
+
+	            @Override
+	            public void onFailure(int reason) {
+	                Toast.makeText(MainActivity.this, "Connect failed. Retry.",
+	                        Toast.LENGTH_SHORT).show();
+	            }
+	        });
+	    }
+
+	    @Override
+	    public void disconnect() {
+	        final DeviceDetailFragment fragment = (DeviceDetailFragment) getFragmentManager()
+	                .findFragmentById(R.id.frag_detail);
+	        fragment.resetViews();
+	        manager.removeGroup(channel, new ActionListener() {
+
+	            @Override
+	            public void onFailure(int reasonCode) {
+	                Log.d(TAG, "Disconnect failed. Reason :" + reasonCode);
+	            }
+
+	            @Override
+	            public void onSuccess() {
+	                fragment.getView().setVisibility(View.GONE);
+	                harsh();
+	            }
+
+	        });
+	    }
+
+	    @Override
+	    public void onChannelDisconnected() {
+	        // we will try once more
+	        if (manager != null && !retryChannel) {
+	            Toast.makeText(this, "Channel lost. Trying again", Toast.LENGTH_LONG).show();
+	            resetData();
+	            retryChannel = true;
+	            manager.initialize(this, getMainLooper(), this);
+	        } else {
+	            Toast.makeText(this,
+	                    "Severe! Channel is probably lost premanently. Try Disable/Re-Enable P2P.",
+	                    Toast.LENGTH_LONG).show();
+	        }
+	    }
+
+	    @Override
+	    public void cancelDisconnect() {
+
+//ignore for now..
+	    }
+
+	
+	//////////////////////////////////////////////////////new code////////////////////////////////////////////
+	
+	
+	
 	// Threads Opens the Server Socket for LIstening Clients Requests....
 	private class AcceptThread extends Thread {
 		private final BluetoothServerSocket mmServerSocket;
@@ -485,175 +659,6 @@ public class MainActivity extends Activity {
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	private class SocketServerThread extends Thread {
-		 static final int SocketServerPORT = 8080;
-	        
-        int count = 0;   //Integer type variable declared and initialized with 0
-
-        @Override
-        public void run() //run method
-        {
-        	Socket socket = null;
-            DataInputStream dataInputStream = null;
-            DataOutputStream dataOutputStream = null;
-            
-
-            
-            try
-            {  // try block starts
-            	android.util.Log.e("TrackingFlow", "In socketserthread try block");
-                cc=new WifiClientModel(); //Object of Client Class
-                serverSocket = new ServerSocket(SocketServerPORT); //Object of ServerSocket and PortNumber has been set
-                android.util.Log.e("TrackingFlow", "serversocket created");
-                MainActivity.this.runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run()
-                    {
-                        info.setText("\n Port: "+ serverSocket.getLocalPort());  //TextView's text has been set with the PortNumber
-                    }
-                });
-
-                while (true) //while loop if the Server and Client gets Connected
-                { //loop starts
-                    
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd - MMM - yyy, hh:mm:ss"); //Using this method to set the desired format of date and time
-                    mydate = sdf.format(new Date());   //String "mydate" holds the date with the specified format using the Date method
-                    socket = serverSocket.accept();   //Object of ServerSocker accepts the request/data sent by the Socket (Client)
-                    
-                    dataInputStream = new DataInputStream(
-                            socket.getInputStream());
-                    dataOutputStream = new DataOutputStream(
-                            socket.getOutputStream());
-
-                   String messageFromClient = "";
-                   
-                   messageFromClient = dataInputStream.readUTF();
-                   
-                   String splitmessage = messageFromClient; 
-                   String[] parts = splitmessage.split("\\,"); 
-                   part1 = parts[0];
-                   part2 = parts[1];
-                   
-                   count++;
-
-                    /***** Updating the message on Server which holds user number, user details like port number, ip address and connection date and time *****/
-
-                    message = "\nUser #" + count + " Details: " + "\nPort Number: "+socket.getPort()+"\nIp Address: "+ socket.getInetAddress()
-                            + "\nConnection Date and Time: "+mydate +"\n"+"Client's Message: "+part1+"\nDevice Name: "+part2+"\n";
-                    
-
-                    /***** using all the methods of Client class via its object and setting the values to store in the database *****/
-                    cc.setKEY_ID(count+"");     //id of the user
-                    cc.setUSER_NUM("User #"+count);     //User number given to the client at the moment amongst the number of users connected
-                    cc.setPORT_NUM(socket.getPort()+""); //Client's Port Number
-                    cc.setIP_ADDRESS(socket.getInetAddress()+"");    //Client's IP Address
-                    cc.setTIME(mydate);         //Connection date and time   
-                    cc.setMESSAGE(part1);   //client's message has been set
-                    cc.setDEVICE(part2);   //Device name has been set
-
-                   /***** All the Details are being added in the Database by setting the object of Client class in addClient method of DatabaseHandler using its object *****/
-                    DatabaseHandler db=new DatabaseHandler(getApplicationContext());
-                    db.addwifiClient(cc);
-
-                    MainActivity.this.runOnUiThread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                        	
-                        	//message += "Server: "+msgtoclient+"\n";
-                            msg.setText(message); //the updated message has been set on the TextView
-
-                        }
-                    });
-                    String msgtoclient = "Hello you are User #" + count;
-                    String device_name = ","+Build.MODEL;
-                    String msgReply = msgtoclient + device_name;
-                    dataOutputStream.writeUTF(msgReply);
-                    
-                    
-                } // loop ends here
-                
-            } //try block ends
-            
-            catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                final String errMsg = e.toString();
-                MainActivity.this.runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        msg.setText(errMsg);
-                    }
-                });
-
-            } finally {
-                if (socket != null) {
-                    try {
-                        socket.close();
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-
-                if (dataInputStream != null) {
-                    try {
-                        dataInputStream.close();
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-
-                if (dataOutputStream != null) {
-                    try {
-                        dataOutputStream.close();
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-
-    }
-
-    /***** User - defined method getIpAddress to get the IpAddress of the Device *****/
-
-    private String getIpAddress() {
-        String ip = "";    //String type variable to store the ip address of the device
-        try
-        { // try block starts
-            //Using NetworkInterface to get the Internal IP Address
-            Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface.getNetworkInterfaces();
-            while (enumNetworkInterfaces.hasMoreElements())
-            {
-                NetworkInterface networkInterface = enumNetworkInterfaces
-                        .nextElement();
-                Enumeration<InetAddress> enumInetAddress = networkInterface
-                        .getInetAddresses();
-                while (enumInetAddress.hasMoreElements()) {
-                    InetAddress inetAddress = enumInetAddress.nextElement();
-
-                    if (inetAddress.isSiteLocalAddress()) {
-                        ip += "IP Address: "+ inetAddress.getHostAddress() + "\n";   //Got the IP Address of the Device
-                        Log.e("IP:",inetAddress.getHostAddress());
-                    }
-
-
-                }
-
-            }
-
-        } // try block ends here
-        catch (SocketException e)
-        {
-            e.printStackTrace();   //in case of any exception...it is being caught here and displayed on console
-        }
-
-        return ip;    //IP address of the device is being returned
-    } // user - defined method ends here
+//	
 	
 }

@@ -46,19 +46,18 @@ public class WifiClientsList extends Activity {
 			DatabaseHandler dbhandler= new DatabaseHandler(this.getApplicationContext());
 			newDB = dbhandler.getWritableDatabase();
 			//Cursor to carry the query result
-			Cursor c=newDB.rawQuery("SELECT user_num, port, ip, time, message, device FROM "+tableName,null);
+			Cursor c=newDB.rawQuery("SELECT macaddress, time, device FROM "+tableName,null);
 
 
 			if (c != null ) {
 				if  (c.moveToFirst()) {
 					do {
-						String usernum = c.getString(c.getColumnIndex("user_num"));
-						String port = c.getString(c.getColumnIndex("port"));
-						String ip = c.getString(c.getColumnIndex("ip"));
-						String time = c.getString(c.getColumnIndex("time"));
-						String message = c.getString(c.getColumnIndex("message"));
 						String device = c.getString(c.getColumnIndex("device"));
-						results.add("\n User Number: " + usernum + "\n Port: " + port+"\n IP Address: "+ip+"\n Message: "+message+"\n Device: "+device+"\n Connected Time: "+time);
+						String macaddress = c.getString(c.getColumnIndex("macaddress"));
+						
+						
+						String time = c.getString(c.getColumnIndex("time"));
+						results.add("\n"+device+"\n"+macaddress+"\n"+time);
 					}while (c.moveToNext());
 				} 
 			}			
